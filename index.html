@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Grid Challenge</title>
+    <style>
+        /* Modern Gradient Background */
+        :root {
+            --color-primary: #6c5ce7;
+            --color-secondary: #a29bfe;
+            --color-accent: #00cec9;
+            --color-dark: #2d3436;
+            --color-light: #f5f6fa;
+            --color-success: #00b894;
+            --color-danger: #d63031;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--color-light);
+        }
+        
+        /* Glassmorphism Container */
+        .game-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        /* Stats Panel */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.8rem;
+            border-radius: 12px;
+            flex: 1;
+            margin: 0 0.5rem;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            margin-bottom: 0.3rem;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        
+        /* Game Grid */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .grid-item {
+            aspect-ratio: 1;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 1.2rem;
+            user-select: none;
+        }
+        
+        .grid-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.03);
+        }
+        
+        .grid-item.active {
+            background: var(--color-accent);
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(0, 206, 201, 0.5);
+        }
+        
+        .grid-item.correct {
+            background: var(--color-success);
+            animation: pulse 0.5s;
+        }
+        
+        .grid-item.wrong {
+            background: var(--color-danger);
+            animation: shake 0.5s;
+        }
+        
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 1.8rem;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        #start-btn {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+        }
+        
+        #reset-btn {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Message Display */
+        #message {
+            min-height: 1.5rem;
+            margin: 1rem 0;
+            font-weight: 600;
+            color: var(--color-accent);
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 1.5rem;
+            }
+            
+            .game-grid {
+                gap: 0.5rem;
+            }
+            
+            .grid-item {
+                font-size: 1rem;
+            }
+            
+            button {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Focus Grid Challenge</h1>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Best</div>
+                <div class="stat-value" id="best">0</div>
+            </div>
+        </div>
+        
+        <div id="message">Memorize the pattern</div>
+        
+        <div class="game-grid" id="game-grid">
+            <!-- Grid items will be generated by JavaScript -->
+        </div>
+        
+        <div class="controls">
+            <button id="start-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 3l14 9-14 9V3z"></path>
+                </svg>
+                Start
+            </button>
+            <button id="reset-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                    <path d="M3 3v5h5"></path>
+                </svg>
+                Reset
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game Elements
+        const gameGrid = document.getElementById('game-grid');
+        const levelDisplay = document.getElementById('level');
+        const scoreDisplay = document.getElementById('score');
+        const bestDisplay = document.getElementById('best');
+        const messageDisplay = document.getElementById('message');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        
+        // Game Variables
+        let level = 1;
+        let score = 0;
+        let best = localStorage.getItem('focusGridBest') || 0;
+        let targetPattern = [];
+        let playerPattern = [];
+        let gameActive = false;
+        let showingPattern = false;
+        
+        // Initialize
+        bestDisplay.textContent = best;
+        createGrid();
+        
+        // Create 4x4 grid
+        function createGrid() {
+            gameGrid.innerHTML = '';
+            
+            for (let i = 0; i < 16; i++) {
+                const gridItem = document.createElement('div');
+                gridItem.className = 'grid-item';
+                gridItem.dataset.index = i;
+                gridItem.addEventListener('click', handleGridClick);
+                gameGrid.appendChild(gridItem);
+            }
+        }
+        
+        // Start Game
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            level = 1;
+            score = 0;
+            targetPattern = [];
+            playerPattern = [];
+            
+            levelDisplay.textContent = level;
+            scoreDisplay.textContent = score;
+            startBtn.disabled = true;
+            
+            nextLevel();
+        }
+        
+        // Next Level
+        function nextLevel() {
+            playerPattern = [];
+            messageDisplay.textContent = "Memorize the pattern...";
+            
+            // Add 2 new items to pattern (1 for level 1, +1 each level)
+            const gridItems = document.querySelectorAll('.grid-item');
+            const availableIndices = Array.from({length: 16}, (_, i) => i);
+            
+            // Remove already used indices from available
+            targetPattern.forEach(index => {
+                const idx = availableIndices.indexOf(index);
+                if (idx > -1) availableIndices.splice(idx, 1);
+            });
+            
+            // Add new unique indices to pattern
+            const newIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            targetPattern.push(newIndex);
+            
+            // Show pattern
+            showPattern();
+        }
+        
+        // Show target pattern
+        function showPattern() {
+            showingPattern = true;
+            let i = 0;
+            
+            const interval = setInterval(() => {
+                if (i >= targetPattern.length) {
+                    clearInterval(interval);
+                    showingPattern = false;
+                    messageDisplay.textContent = "Now repeat the pattern!";
+                    return;
+                }
+                
+                const index = targetPattern[i];
+                const gridItem = document.querySelector(`.grid-item[data-index="${index}"]`);
+                
+                // Highlight item
+                gridItem.classList.add('active');
+                setTimeout(() => {
+                    gridItem.classList.remove('active');
+                }, 500);
+                
+                i++;
+            }, 800);
+        }
+        
+        // Handle grid item click
+        function handleGridClick(e) {
+            if (!gameActive || showingPattern) return;
+            
+            const index = parseInt(e.target.dataset.index);
+            playerPattern.push(index);
+            
+            // Check if correct
+            if (index === targetPattern[playerPattern.length - 1]) {
+                // Correct
+                e.target.classList.add('correct');
+                setTimeout(() => {
+                    e.target.classList.remove('correct');
+                }, 300);
+                
+                // Check if pattern complete
+                if (playerPattern.length === targetPattern.length) {
+                    score += level * 10;
+                    scoreDisplay.textContent = score;
+                    level++;
+                    levelDisplay.textContent = level;
+                    
+                    messageDisplay.textContent = "Good job! Next level...";
+                    setTimeout(() => {
+                        nextLevel();
+                    }, 1500);
+                }
+            } else {
+                // Wrong
+                e.target.classList.add('wrong');
+                setTimeout(() => {
+                    e.target.classList.remove('wrong');
+                }, 300);
+                
+                messageDisplay.textContent = "Wrong! Try again";
+                playerPattern = [];
+                
+                // Show pattern again
+                setTimeout(() => {
+                    showPattern();
+                }, 1000);
+            }
+        }
+        
+        // Reset Game
+        function resetGame() {
+            gameActive = false;
+            showingPattern = false;
+            startBtn.disabled = false;
+            
+            // Update best score
+            if (score > best) {
+                best = score;
+                bestDisplay.textContent = best;
+                localStorage.setItem('focusGridBest', best);
+            }
+            
+            messageDisplay.textContent = "Press START to begin";
+            
+            // Reset all grid items
+            document.querySelectorAll('.grid-item').forEach(item => {
+                item.classList.remove('active', 'correct', 'wrong');
+            });
+        }
+        
+        // Event Listeners
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
